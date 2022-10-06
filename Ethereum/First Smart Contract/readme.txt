@@ -1,3 +1,7 @@
-This is a Remix backup file.
-This zip should be used by the restore backup tool in Remix.
-The .workspaces directory contains your workspaces.
+A simple smart contract code with a solidity code cheatsheet for begginers in the field. 
+
+Written in Solidity. 
+Written on Remix Cloud IDE. 
+Deployed in: Goerli Testnet.
+
+Enjoy.
