@@ -1,0 +1,41 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/fundMe.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\nimport \"./PriceConverter.sol\";\r\n\r\n//gas : 972215\r\n\r\nerror NotOwner();\r\n\r\ncontract FundMe {\r\n    using PriceConverter for uint256;\r\n    uint256 public constant MINIMUM_USD = 50 * 1e18;\r\n    address[] public funders;\r\n    mapping(address => uint256) public adressToAmountFunded;\r\n    address public immutable i_owner;\r\n\r\n    AggregatorV3Interface public priceFeed;\r\n\r\n    constructor(address priceFeedAddress) {\r\n        i_owner = msg.sender;\r\n        priceFeed = AggregatorV3Interface(priceFeedAddress);\r\n    }\r\n\r\n    function fund() public payable {\r\n        // msg.value here is considered as the first parameter of the function it calls(getConversionRate)\r\n        require(\r\n            msg.value.getConversionRate(priceFeed) >= MINIMUM_USD,\r\n            \"The amount is less than 1ETH! Try Again.\"\r\n        ); // 1e18 == 1* 10 ** 18 = 100000000000000000 wei = 1eth\r\n        funders.push(msg.sender);\r\n        adressToAmountFunded[msg.sender] = msg.value;\r\n    }\r\n\r\n    function withdraw() public onlyOwner {\r\n        //resset mapping\r\n        for (\r\n            uint256 funderIndex = 0;\r\n            funderIndex < funders.length;\r\n            funderIndex++\r\n        ) {\r\n            address funder = funders[funderIndex];\r\n            adressToAmountFunded[funder] = 0;\r\n        }\r\n        //resetting array\r\n        funders = new address[](0);\r\n\r\n        //Withdraw funds (we can do it with 3 ways)\r\n\r\n        //1. Transfer [Capped at 2300 gas and will throw an error upon failing]\r\n        //payable(msg.sender).transfer(address(this).balance);\r\n\r\n        //2. Send [Capped at 2300 gas and will return a bool upon excecution without error]\r\n        //bool sendSuccess = payable(msg.sender).send(address(this).balance);\r\n        //require(sendSuccess, \"Send Failed\");\r\n\r\n        //3. Call [forward all gas or set gas, reutns bool] - RECOMENDED WAY\r\n        (bool callSuccess, ) = payable(msg.sender).call{\r\n            value: address(this).balance\r\n        }(\"\");\r\n        require(callSuccess, \"Send Failed\");\r\n    }\r\n\r\n    //Modifier\r\n    //A modifier is a keyword that we can add right in the function declaration, to modify the function with that functionality\r\n    modifier onlyOwner() {\r\n        if (msg.sender != i_owner) {\r\n            revert NotOwner();\r\n        }\r\n        //require(msg.sender == i_owner, \"You are not the Owner!\");\r\n        _; //do the rest of the  code after\r\n\r\n        //If we had the _; before the first line, it means that: First do all the other code and then run the require\r\n    }\r\n\r\n    // What happens if someone sends this contract ETH without calling the fund function?\r\n    //There is actually a way for when people send money to this contract or people call a function that doesnt exist, for us to still trigger some code.\r\n\r\n    //1. Receive() [when you send something but you dont specify what to do (CALLDATA)]\r\n\r\n    //2. Fallback() [when you send something but you specify what to do (CALLDATA)]\r\n\r\n    /* Diagram Explaining the special functions\r\n            is msg.data empty?\r\n                  /   \\\r\n                  yes  no\r\n                   /    \\    \r\n            receive()?   fallback()   \r\n             /      \\     \r\n            yes     no\r\n             /       \\   \r\n        receive()  fallback()\r\n    */\r\n\r\n    receive() external payable {\r\n        fund();\r\n    }\r\n\r\n    fallback() external payable {\r\n        fund();\r\n    }\r\n}\r\n"
+    },
+    "contracts/PriceConverter.sol": {
+      "content": "//SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\r\n\r\n/* Explanation:\r\nLibraries are simillar to contracts, but you cant declare any state variable and you cant send ether.\r\nA library is embedded into the contract if all library functions are internal.\r\nOtherwise the library must be deployed and then linked before the contract is deployed.\r\nWe can also use libraries to add more functionallity to different values. For example, what we can do actually in this example\r\nis we can have getConversionRate() function be a function of an int256.\r\nSo we can add functions as if uint256 was an object or a struct or a contract that we actually created!.\r\n*/\r\n\r\nlibrary PriceConverter {\r\n    /*Returns the current price of ETH */\r\n    function getPrice(AggregatorV3Interface priceFeed)\r\n        internal\r\n        view\r\n        returns (uint256)\r\n    {\r\n        (, int256 price, , , ) = priceFeed.latestRoundData(); //ETH in terms of USD\r\n        return uint256(price * 1e10); // 1*10 == 10000000000\r\n    }\r\n\r\n    function getConversionRate(\r\n        uint256 ethAmount,\r\n        AggregatorV3Interface priceFeed\r\n    ) internal view returns (uint256) {\r\n        uint256 ethPrice = getPrice(priceFeed);\r\n        uint256 ethAmountInUSD = (ethPrice * ethAmount) / 1e18;\r\n        return ethAmountInUSD;\r\n    }\r\n}\r\n"
+    },
+    "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ninterface AggregatorV3Interface {\n  function decimals() external view returns (uint8);\n\n  function description() external view returns (string memory);\n\n  function version() external view returns (uint256);\n\n  function getRoundData(uint80 _roundId)\n    external\n    view\n    returns (\n      uint80 roundId,\n      int256 answer,\n      uint256 startedAt,\n      uint256 updatedAt,\n      uint80 answeredInRound\n    );\n\n  function latestRoundData()\n    external\n    view\n    returns (\n      uint80 roundId,\n      int256 answer,\n      uint256 startedAt,\n      uint256 updatedAt,\n      uint80 answeredInRound\n    );\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
