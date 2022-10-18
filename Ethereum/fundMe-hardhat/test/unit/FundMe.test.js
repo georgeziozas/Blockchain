@@ -19,6 +19,7 @@ const { deployments, ethers, getNamedAccounts } = require("hardhat")
                   deployer
               )
           })
+
           describe("constructor", () => {
               it("sets the aggregator addresses correctly", async function () {
                   const response = await fundMe.getPriceFeed()

@@ -1,3 +1,4 @@
+//configuring the different pricefeeds of USD-ETH (taken from ChainLink) for every network
 const networkConfig = {
     5: {
         name: "goerli",
@@ -12,9 +13,11 @@ const networkConfig = {
         ethUsdPriceFeed: "0x9ef1B8c0E4F7dc8bF5719Ea496883DC6401d5b2e",
     },
 }
+
 const developmentChains = ["hardhat", "localhost"]
 const DECIMALS = 8
 const INITIAL_ANSWER = 200000000000
+
 module.exports = {
     networkConfig,
     developmentChains,
