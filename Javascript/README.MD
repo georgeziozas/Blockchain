@@ -4,4 +4,6 @@ A javascript tutorial for devs with some programming knowledge who want to get u
 
 -todos: Detailed tutorial on sending network requests the right way + detailed array functions examples.
 
+-Efficient Javascript Fresher: A complete code tutorial for devs looking to freshen up their skills with JS! Use codesandbox for a better experience.
+
 Enjoy.
