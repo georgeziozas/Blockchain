@@ -1,4 +1,4 @@
-A javascript tutorial for devs with some programming knowledge who want to get up to speed with the language in days. 
+Javascript repository containing personal projects & personal created tutorials.
 
 - sandbox.js : Javascript all around tutorial with detailed comments.
 
