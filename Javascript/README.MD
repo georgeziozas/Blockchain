@@ -8,6 +8,8 @@ Javascript repository containing personal projects & personal created tutorials.
 
 - Efficient Javascript Fresher: A complete code tutorial for devs looking to freshen up their skills with JS! Use codesandbox for a better experience.
 
-- react-movie-api: A collection of different files showcasing basic react concepts and creating a basic movie searcher. (Training Project)
+- react-movie-api: A collection of different files showcasing basic react concepts and creating a basic movie searcher. (Practice Project).
+
+- airbnb-experiences-clone: A clone of the UI of airbnb experience page using react components. (Practice Project).
 
 Enjoy.
