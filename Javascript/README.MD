@@ -12,4 +12,6 @@ Javascript repository containing personal projects & personal created tutorials.
 
 - airbnb-experiences-clone: A clone of the UI of airbnb experience page using react components. (Practice Project).
 
+- meme-generator: A simple meme generator fetching memes from an API and rendering them to the page using react components. (Practice Project).
+
 Enjoy.
